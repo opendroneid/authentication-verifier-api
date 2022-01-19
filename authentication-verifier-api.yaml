@@ -1,0 +1,100 @@
+openapi: 3.0.2
+info:
+  description: |-
+    This API is to allow a Remote ID client to verify the authentication information received by a Remote ID transmitter
+    [github](https://github.com/opendroneid/authentication-verifier-api/blob/main/authentication-verifier-api.yaml)
+  version: "1.1.0"
+  title: Remote ID Verifier API
+  contact:
+    email: gabriel.c.cox@intel.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+paths:
+  /remoteid/verify/:
+    post:
+      summary: Verifies ASTM Remote ID Authentication Package
+      description: Verifies ASTM Remote ID Authentication
+      responses:
+        '200':
+           description: Standard Response
+           content:
+             application/json:
+               schema:
+                 type: object
+                 required:
+                   - ResultCode
+                   - ResultString
+                 properties:
+                   ResultCode:
+                     type: integer
+                     description: >
+                       Result Code:
+                        0: Signature and Message Valid
+                        1: Message Invalid
+                        2: Key Expired, Message Valid
+                        3: Unknown Validity (key not available)
+                        4: Key Revoked
+                        5: Unknown ID
+                        6: Delegated
+                   ResultString:
+                     type: string
+                     description: If Delegated, Delegated Endpoint URL, otherwise Result Description
+                     example: Signature and Message Valid
+        '400':
+          description: 'Invalid Request'
+      requestBody:
+        description: ID Info to verify
+        content:
+          application/json:
+             schema:
+               type: object
+               required:
+                 - AuthType
+                 - UASID
+                 - UASIDType
+                 - OperatorID
+                 - MessageSet
+                 - AuthSignature
+                 - TimeStamp
+               properties:
+                 AuthType:
+                   type: integer
+                   minimum: 1
+                   maximum: 5
+                   description: >
+                     1. UASID
+                     2. OperatorID
+                     3. MessageSet
+                     4. Network
+                     5. SpecificAuthMethod
+                   example: 1
+                 UASID:
+                   type: string
+                   example: 'N.12345'
+                 UASIDType:
+                   type: integer
+                   minimum: 1
+                   maximum: 4
+                   description: >
+                     1. ANSI/CTA-2063-A Serial Number
+                     2. UAS Registration ID
+                     3. UTM UUID
+                     4. Specific Session ID
+                   example: 2
+                 OperatorID:
+                   type: string
+                   example: 'D.OP55544'
+                 MessageSet:
+                   type: string
+                   format: byte
+                   example: 'YmFzZTY0IGV4YW1wbGU='
+                   description: If using messageSet authtype, base64 encode of message set
+                 AuthSignature:
+                   type: string
+                   description: 'Signature with authType data encoded'
+                   example: '92429d82a41e930486c6de5ebda9602d55c39986'
+                 TimeStamp:
+                   type: string
+                   format: date-time
+                   example: '2021-08-29T09:12:33.001Z'
